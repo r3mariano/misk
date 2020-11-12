@@ -10,23 +10,23 @@ import {
 export const FormBuilderContainer = (props: {
   formType: string
   noFormIdentifier: string
-  setFormData: Dispatch<SetStateAction<object>>
   rawRequestBody: string
-  setRawRequestBody: Dispatch<SetStateAction<string>>
   requestBodyFormInputType: boolean
-  setRequestBodyFormInputType: Dispatch<SetStateAction<boolean>>
   setIsOpenRequestBodyPreview: Dispatch<SetStateAction<boolean>>
+  setFormData: Dispatch<SetStateAction<object>>
+  setRawRequestBody: Dispatch<SetStateAction<string>>
+  setRequestBodyFormInputType: Dispatch<SetStateAction<boolean>>
   types: IActionTypes
 }) => {
   const {
     formType,
     noFormIdentifier,
-    setFormData,
-    requestBodyFormInputType,
-    setRequestBodyFormInputType,
-    setIsOpenRequestBodyPreview,
     rawRequestBody,
+    requestBodyFormInputType,
+    setFormData,
+    setIsOpenRequestBodyPreview,
     setRawRequestBody,
+    setRequestBodyFormInputType,
     types
   } = props
   const [typesMetadata, setTypesMetadata] = useState(
@@ -43,18 +43,18 @@ export const FormBuilderContainer = (props: {
 
   return (
     <FormFieldBuilderContainer
+      fieldValueStore={fieldValueStore}
       id={"0"}
       noFormIdentifier={noFormIdentifier}
-      types={types}
-      setIsOpenRequestBodyPreview={setIsOpenRequestBodyPreview}
-      fieldValueStore={fieldValueStore}
-      setFieldValueStore={setFieldValueStore}
-      setTypesMetadata={setTypesMetadata}
-      typesMetadata={typesMetadata}
-      requestBodyFormInputType={requestBodyFormInputType}
-      setRequestBodyFormInputType={setRequestBodyFormInputType}
       rawRequestBody={rawRequestBody}
+      requestBodyFormInputType={requestBodyFormInputType}
+      setFieldValueStore={setFieldValueStore}
+      setIsOpenRequestBodyPreview={setIsOpenRequestBodyPreview}
       setRawRequestBody={setRawRequestBody}
+      setRequestBodyFormInputType={setRequestBodyFormInputType}
+      setTypesMetadata={setTypesMetadata}
+      types={types}
+      typesMetadata={typesMetadata}
     />
   )
 }

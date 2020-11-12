@@ -1,8 +1,7 @@
-import { simpleSelectorGet } from "@misk/simpleredux"
 import { chain } from "lodash"
 import React, { useState } from "react"
 import { connect } from "react-redux"
-import { SkeletonWebActionsComponent } from "../components"
+import { SkeletonDatabaseQueryComponent as SkeletonDatabaseQueryComponent } from "../components"
 import {
   IDatabaseQueryMetadataAPI,
   FilterDatabaseQueryContainer,
@@ -27,12 +26,13 @@ const DatabaseQueryContainer = (
       tag: string
     }
 ) => {
-  const metadata =
-    props.metadata || simpleSelectorGet(props.webActions, "metadata", [])
+  const metadata = props.metadata || []
   const [filteredMetadata, setFilteredMetadata] = useState(
     metadata as IDatabaseQueryMetadataAPI[]
   )
   if (metadata.length > 0) {
+    console.log("METADATA", metadata)
+    console.log("METADATA", filteredMetadata)
     return (
       <div>
         <FilterDatabaseQueryContainer
@@ -41,7 +41,8 @@ const DatabaseQueryContainer = (
           tag={props.tag}
         />
         <div>
-          {chain(filteredMetadata)
+          {/* {chain(filteredMetadata) */}
+          {chain(metadata)
             .sortBy(["table", "queryClass"])
             .map((databaseQuery: IDatabaseQueryMetadataAPI, index: number) => (
               <DatabaseQueryCardContainer
@@ -64,15 +65,17 @@ const DatabaseQueryContainer = (
           tag={props.tag}
         />
         {/* TODO (adrw) mock this to be Database Query */}
-        <SkeletonWebActionsComponent />
+        <SkeletonDatabaseQueryComponent />
         <br />
-        <SkeletonWebActionsComponent />
+        <SkeletonDatabaseQueryComponent />
         <br />
-        <SkeletonWebActionsComponent />
+        <SkeletonDatabaseQueryComponent />
         <br />
-        <SkeletonWebActionsComponent />
+        <SkeletonDatabaseQueryComponent />
         <br />
-        <SkeletonWebActionsComponent />
+        <SkeletonDatabaseQueryComponent />
+        <br />
+        <SkeletonDatabaseQueryComponent />
       </div>
     )
   }

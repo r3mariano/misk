@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { Button, ControlGroup, Menu } from "@blueprintjs/core"
 import { jsx } from "@emotion/core"
-import { CodePreContainer, HTTPMethodIntent } from "@misk/core"
+import { CodePreContainer, HTTPMethodIntent, Table } from "@misk/core"
 import { HTTPMethodDispatch, simpleSelectorGet } from "@misk/simpleredux"
 import { HTTPMethod } from "http-method-enum"
 import { Dispatch, SetStateAction } from "react"
@@ -22,7 +22,7 @@ import {
   mapStateToProps,
   methodHasBody
 } from "../ducks"
-import { IDatabaseQueryMetadataAPI } from "./DatabaseQueryInterfaces"
+import { IDatabaseQueryMetadataAPI, IRunQueryAPIRequest } from "./DatabaseQueryInterfaces"
 
 /**
  * Collapse wrapped Send a Request form for each Web Action card
@@ -38,13 +38,13 @@ const SendQueryContainer = (
     IDispatchProps
 ) => {
   const {
+    databaseQuery,
     formData,
     isOpenRequestBodyPreview,
     setIsOpenRequestBodyPreview,
     tag
   } = props
-  const url = "/api/.../database/query/run"
-
+  const url = databaseQuery.queryWebActionPath
   const method: HTTPMethod = HTTPMethod.POST
 
   // Response with fallback to error
@@ -111,7 +111,11 @@ const SendQueryContainer = (
           large={true}
           onClick={() => {
             props.simpleMergeData(`${tag}::ButtonRequestBody`, false)
-            HTTPMethodDispatch(props)[method](`${tag}::Response`, url, formData)
+            HTTPMethodDispatch(props)[method](`${tag}::Response`, url, {
+              entityClass: databaseQuery.entityClass,
+              queryClass: databaseQuery.queryClass,
+              query: formData || {}
+            } as IRunQueryAPIRequest)
           }}
           intent={HTTPMethodIntent[method]}
           loading={simpleSelectorGet(props.simpleRedux, [
@@ -176,6 +180,9 @@ const SendQueryContainer = (
               data={responseData}
               description={"Raw Response"}
             />
+            {/* <Table
+              data = {responseData && "headers" in responseData  && "rows" in responseData && responseData["headers"] + responseData["rows"]}
+             /> */}
             <CodePreContainer>
               {JSON.stringify(responseData, null, 2)}
             </CodePreContainer>

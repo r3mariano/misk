@@ -60,12 +60,14 @@ internal class SchemaValidatorTest {
 
       bind(keyOf<Transacter>(qualifier)).toProvider(object : Provider<Transacter> {
         @Inject lateinit var executorServiceFactory: ExecutorServiceFactory
+        @Inject lateinit var hibernateEntities: Set<HibernateEntity>
         override fun get(): RealTransacter = RealTransacter(
             qualifier = qualifier,
             sessionFactoryProvider = sessionFactoryProvider,
             readerSessionFactoryProvider = null,
             config = config.data_source,
-            executorServiceFactory = executorServiceFactory
+            executorServiceFactory = executorServiceFactory,
+            hibernateEntities = hibernateEntities
         )
       }).asSingleton()
 

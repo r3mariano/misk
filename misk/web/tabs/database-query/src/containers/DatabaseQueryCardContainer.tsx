@@ -151,12 +151,6 @@ export const DatabaseQueryCardContainer = (props: {
                 isOpen={isOpenRoles}
                 setIsOpen={setIsOpenRoles}
               />
-              {/* <MetadataCollapse
-                content={props.databaseQuery.accessAnnotation}
-                label={"Access"}
-                isOpen={isOpenAccess}
-                setIsOpen={setIsOpenAccess}
-              /> */}
               <MetadataCollapse
                 children={<span />}
                 isOpen={isOpenRunQuery}

@@ -29,15 +29,15 @@ export const QueryFormContainer = (props: {
         <H5>{"Query"}</H5>
         {
           <FormBuilderContainer
-            formType={"QueryRequest"}
-            noFormIdentifier={`QueryRequest`}
-            types={databaseQuery.types}
+            formType={"queryType"}
+            noFormIdentifier={`Query Request`}
             rawRequestBody={rawRequestBody}
-            setRawRequestBody={setRawRequestBody}
             requestBodyFormInputType={requestBodyFormInputType}
-            setRequestBodyFormInputType={setRequestBodyFormInputType}
-            setIsOpenRequestBodyPreview={setIsOpenRequestBodyPreview}
             setFormData={setFormData}
+            setIsOpenRequestBodyPreview={setIsOpenRequestBodyPreview}
+            setRawRequestBody={setRawRequestBody}
+            setRequestBodyFormInputType={setRequestBodyFormInputType}
+            types={databaseQuery.types}
           />
         }
       </Menu>

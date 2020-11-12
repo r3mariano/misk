@@ -33,6 +33,10 @@ abstract class HibernateEntityModule(
     }
   }
 
+  protected inline fun <reified T: DbEntity<T>>addEntity() {
+    addEntities(T::class)
+  }
+
   protected fun <T> bindListener(type: EventType<T>): LinkedBindingBuilder<in T> {
     // Bind the listener as an anonymous key. We can get the provider for this before its bound!
     val key = Key.get(

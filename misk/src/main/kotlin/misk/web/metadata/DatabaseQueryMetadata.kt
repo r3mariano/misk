@@ -1,13 +1,13 @@
 package misk.web.metadata
 
-import misk.web.formatter.ClassNameFormatter
 import kotlin.reflect.KClass
 
 /** Metadata front end model for Database Query Misk-Web Tab */
 data class DatabaseQueryMetadata(
+  val queryWebActionPath: String,
   val allowedCapabilities: Set<String> = setOf(),
   val allowedServices: Set<String> = setOf(),
-  val accessAnnotation: String,
+  val accessAnnotation: String?,
   /** SQL table name */
   val table: String,
   /** DbTable entity class */
@@ -24,23 +24,25 @@ data class DatabaseQueryMetadata(
   val types: Map<String, Type>
 ) {
   constructor(
+    queryWebActionPath: String,
     allowedCapabilities: Set<String> = setOf(),
     allowedServices: Set<String> = setOf(),
-    accessAnnotation: Annotation,
+    accessAnnotation: KClass<out Annotation>? = null,
     table: String,
     entityClass: KClass<*>,
-    queryClass: KClass<*>,
+    queryClass: KClass<*>?,
     constraints: List<ConstraintMetadata>,
     orders: List<OrderMetadata>,
     selects: List<SelectMetadata>,
     types: Map<String, Type>
   ) : this(
+      queryWebActionPath = queryWebActionPath,
       allowedCapabilities = allowedCapabilities,
       allowedServices = allowedServices,
-      accessAnnotation = accessAnnotation.toString(),
+      accessAnnotation = accessAnnotation?.simpleName,
       table = table,
-      entityClass = ClassNameFormatter.format(entityClass::class),
-      queryClass = ClassNameFormatter.format(queryClass::class),
+      entityClass = entityClass.simpleName!!, // Assert not null, since this shouldn't be anonymous.
+      queryClass = queryClass?.simpleName ?: "${entityClass.simpleName!!}DynamicQuery",
       constraints = constraints,
       orders = orders,
       selects = selects,
@@ -49,22 +51,21 @@ data class DatabaseQueryMetadata(
 
   data class ConstraintMetadata(
     override val name: String,
-    override val parametersType: String,
+    override val parametersTypeName: String,
     val path: String,
     val operator: String
   ) : FunctionMetadata
 
   data class OrderMetadata(
     override val name: String,
-    override val parametersType: String,
+    override val parametersTypeName: String,
     val path: String,
-    val operator: String
+    val ascending: Boolean
   ) : FunctionMetadata
 
   data class SelectMetadata(
     override val name: String,
-    override val parametersType: String,
-    val path: String,
-    val operator: String
+    override val parametersTypeName: String,
+    val paths: List<String>,
   ) : FunctionMetadata
 }
