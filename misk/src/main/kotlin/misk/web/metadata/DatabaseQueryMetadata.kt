@@ -1,5 +1,6 @@
 package misk.web.metadata
 
+import misk.web.MiskWebFormBuilder
 import kotlin.reflect.KClass
 
 /** Metadata front end model for Database Query Misk-Web Tab */
@@ -21,7 +22,7 @@ data class DatabaseQueryMetadata(
   /** @Select functions on Misk Query interface, maps function simpleName to Type */
   val selects: List<SelectMetadata>,
   /** Contains all Types across all queries */
-  val types: Map<String, Type>
+  val types: Map<String, MiskWebFormBuilder.Type>
 ) {
   constructor(
     queryWebActionPath: String,
@@ -34,7 +35,7 @@ data class DatabaseQueryMetadata(
     constraints: List<ConstraintMetadata>,
     orders: List<OrderMetadata>,
     selects: List<SelectMetadata>,
-    types: Map<String, Type>
+    types: Map<String, MiskWebFormBuilder.Type>
   ) : this(
       queryWebActionPath = queryWebActionPath,
       allowedCapabilities = allowedCapabilities,
@@ -42,7 +43,7 @@ data class DatabaseQueryMetadata(
       accessAnnotation = accessAnnotation?.simpleName,
       table = table,
       entityClass = entityClass.simpleName!!, // Assert not null, since this shouldn't be anonymous.
-      queryClass = queryClass?.simpleName ?: "${entityClass.simpleName!!}DynamicQuery",
+      queryClass = queryClass?.simpleName ?: "${entityClass.simpleName!!}$DYNAMIC_QUERY_KCLASS_SUFFIX",
       constraints = constraints,
       orders = orders,
       selects = selects,
@@ -68,4 +69,8 @@ data class DatabaseQueryMetadata(
     override val parametersTypeName: String,
     val paths: List<String>,
   ) : FunctionMetadata
+
+  companion object {
+    const val DYNAMIC_QUERY_KCLASS_SUFFIX = "DynamicQuery"
+  }
 }

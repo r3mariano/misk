@@ -2,24 +2,25 @@ package misk.web.metadata
 
 import com.squareup.protos.test.parsing.Shipment
 import com.squareup.protos.test.parsing.Warehouse
-import misk.web.RequestTypes
+import misk.web.MiskWebFormBuilder
+import misk.web.MiskWebFormBuilder.Field
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import kotlin.reflect.full.createType
 
-internal class RequestTypesTest {
-  val requestTypes = RequestTypes()
+internal class MiskWebFormBuilderTest {
+  val miskWebFormBuilder = MiskWebFormBuilder()
 
   @Test fun handlesNull() {
-    assertThat(requestTypes.calculateTypes(null)).isEmpty()
+    assertThat(miskWebFormBuilder.calculateTypes(null)).isEmpty()
   }
 
   @Test fun handlesNonWireMessages() {
-    assertThat(requestTypes.calculateTypes(String::class.createType())).isEmpty()
+    assertThat(miskWebFormBuilder.calculateTypes(String::class.createType())).isEmpty()
   }
 
   @Test fun handlesWireMessages() {
-    val types = requestTypes.calculateTypes(Shipment::class.createType())
+    val types = miskWebFormBuilder.calculateTypes(Shipment::class.createType())
 
     // Check Message Types
     assertThat(types).hasSize(2)

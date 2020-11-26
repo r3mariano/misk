@@ -22,7 +22,10 @@ import {
   mapStateToProps,
   methodHasBody
 } from "../ducks"
-import { IDatabaseQueryMetadataAPI, IRunQueryAPIRequest } from "./DatabaseQueryInterfaces"
+import {
+  IDatabaseQueryMetadataAPI,
+  IRunQueryAPIRequest
+} from "./DatabaseQueryInterfaces"
 
 /**
  * Collapse wrapped Send a Request form for each Web Action card

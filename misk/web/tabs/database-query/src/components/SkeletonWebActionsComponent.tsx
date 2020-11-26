@@ -23,27 +23,25 @@ export const SkeletonText = () => (
 export const SkeletonDatabaseQueryComponent = () => (
   <Card>
     <div css={cssHeader}>
-          <span css={cssFloatLeft}>
-            <H3><SkeletonText/></H3>
-          </span>
-          <Tag
-            css={cssFloatLeft}
-            intent={Intent.PRIMARY}
-            large={true}
-          >
-            <SkeletonText/>
-          </Tag>
-          <span css={cssFloatLeft}>
-            <Tag css={cssCodeTag} icon={IconNames.TH} large={true}>
-              <SkeletonText/>
-            </Tag>
-          </span>
-          <span css={cssFloatLeft}>
-            <Tag css={cssCodeTag} icon={IconNames.LOCK} large={true}>
-              <SkeletonText/>
-            </Tag>
-          </span>
-        </div>
+      <span css={cssFloatLeft}>
+        <H3>
+          <SkeletonText />
+        </H3>
+      </span>
+      <Tag css={cssFloatLeft} intent={Intent.PRIMARY} large={true}>
+        <SkeletonText />
+      </Tag>
+      <span css={cssFloatLeft}>
+        <Tag css={cssCodeTag} icon={IconNames.TH} large={true}>
+          <SkeletonText />
+        </Tag>
+      </span>
+      <span css={cssFloatLeft}>
+        <Tag css={cssCodeTag} icon={IconNames.LOCK} large={true}>
+          <SkeletonText />
+        </Tag>
+      </span>
+    </div>
     <FlexContainer>
       <div css={cssColumn}>
         <Menu css={cssMetadataMenu}>

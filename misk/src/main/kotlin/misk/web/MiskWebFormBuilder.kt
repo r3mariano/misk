@@ -4,8 +4,6 @@ import com.google.common.base.Preconditions
 import com.squareup.wire.Message
 import com.squareup.wire.WireEnum
 import com.squareup.wire.WireField
-import misk.web.metadata.Field
-import misk.web.metadata.Type
 import okio.ByteString
 import java.time.Duration
 import java.time.Instant
@@ -24,7 +22,7 @@ import kotlin.reflect.full.superclasses
  * Currently only supports Wire request type messages;
  * non-Wire messages return an empty mapping.
  */
-class RequestTypes {
+class MiskWebFormBuilder {
   fun calculateTypes(requestType: KType?): Map<String, Type> {
     // Type maps can only be calculated for wire messages
     if (requestType == null) {
@@ -143,4 +141,15 @@ class RequestTypes {
           repeated)
     }
   }
+
+  /** Akin to a Proto Message, a Type has a list of fields */
+  data class Type(val fields: List<Field>)
+
+  /**
+   * Akin to a Proto field, a field can be of primitive or another Message type,
+   * and can be repeated to become a list
+   *
+   * Enums are encoded to contain their values within their Type definition as opposed to a unique Type
+   */
+  data class Field(val name: String, val type: String, val repeated: Boolean)
 }

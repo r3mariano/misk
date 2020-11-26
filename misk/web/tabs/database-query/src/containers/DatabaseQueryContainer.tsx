@@ -1,7 +1,7 @@
 import { chain } from "lodash"
 import React, { useState } from "react"
 import { connect } from "react-redux"
-import { SkeletonDatabaseQueryComponent as SkeletonDatabaseQueryComponent } from "../components"
+import { SkeletonDatabaseQueryComponent } from "../components"
 import {
   IDatabaseQueryMetadataAPI,
   FilterDatabaseQueryContainer,

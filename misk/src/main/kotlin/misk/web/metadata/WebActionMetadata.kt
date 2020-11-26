@@ -2,9 +2,9 @@ package misk.web.metadata
 
 import misk.ApplicationInterceptor
 import misk.web.DispatchMechanism
+import misk.web.MiskWebFormBuilder
 import misk.web.NetworkInterceptor
 import misk.web.PathPattern
-import misk.web.RequestTypes
 import misk.web.formatter.ClassNameFormatter
 import misk.web.mediatype.MediaRange
 import okhttp3.MediaType
@@ -20,7 +20,7 @@ data class WebActionMetadata(
   val parameterTypes: List<String>,
   val requestType: String?,
   val returnType: String,
-  val types: Map<String, Type>,
+  val types: Map<String, MiskWebFormBuilder.Type>,
   val pathPattern: String,
   val applicationInterceptors: List<String>,
   val networkInterceptors: List<String>,
@@ -52,7 +52,7 @@ data class WebActionMetadata(
       parameterTypes = parameterTypes.map { it.toString() },
       requestType = requestType.toString(),
       returnType = returnType.toString(),
-      types = RequestTypes().calculateTypes(requestType),
+      types = MiskWebFormBuilder().calculateTypes(requestType),
       pathPattern = pathPattern.toString(),
       applicationInterceptors = applicationInterceptors.map {
         ClassNameFormatter.format(it::class)

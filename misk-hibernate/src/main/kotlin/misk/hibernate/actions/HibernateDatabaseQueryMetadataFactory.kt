@@ -10,13 +10,15 @@ import misk.hibernate.Property
 import misk.hibernate.Query
 import misk.hibernate.Select
 import misk.hibernate.Session
-import misk.hibernate.actions.HibernateDatabaseQueryAction.Companion.HIBERNATE_QUERY_WEBACTION_PATH
+import misk.hibernate.actions.HibernateDatabaseQueryStaticAction.Companion.HIBERNATE_QUERY_DYNAMIC_WEBACTION_PATH
+import misk.hibernate.actions.HibernateDatabaseQueryStaticAction.Companion.HIBERNATE_QUERY_STATIC_WEBACTION_PATH
 import misk.security.authz.AccessAnnotationEntry
-import misk.web.RequestTypes.Companion.createEnumField
-import misk.web.RequestTypes.Companion.maybeCreatePrimitiveField
+import misk.web.MiskWebFormBuilder
+import misk.web.MiskWebFormBuilder.Field
+import misk.web.MiskWebFormBuilder.Type
+import misk.web.MiskWebFormBuilder.Companion.createEnumField
+import misk.web.MiskWebFormBuilder.Companion.maybeCreatePrimitiveField
 import misk.web.metadata.DatabaseQueryMetadata
-import misk.web.metadata.Field
-import misk.web.metadata.Type
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.persistence.Table
@@ -24,6 +26,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KType
 import kotlin.reflect.full.allSupertypes
+import kotlin.reflect.full.createType
 import kotlin.reflect.full.declaredMemberFunctions
 import kotlin.reflect.full.findAnnotation
 
@@ -31,34 +34,6 @@ import kotlin.reflect.full.findAnnotation
 class HibernateDatabaseQueryMetadataFactory @Inject constructor(
   val accessAnnotationEntries: List<AccessAnnotationEntry>
 ) {
-  private val DYNAMIC_CONSTRAINT_TYPE_NAME = "Constraint/Dynamic"
-  private val DYNAMIC_ORDER_TYPE_NAME = "Order/Dynamic"
-  private val DYNAMIC_SELECT_TYPE_NAME = "Select/Dynamic"
-  private val DYNAMIC_ROOT_TYPE = "DynamicQuery"
-  private val DYNAMIC_TYPES = listOf(
-      DYNAMIC_CONSTRAINT_TYPE_NAME to Type(fields = listOf(
-          Field(name = "Path", repeated = false, type = "String"),
-          createEnumField(Operator::class, "Operator", false),
-          Field(name = "Value", repeated = false, type = "String"),
-      )),
-      DYNAMIC_ORDER_TYPE_NAME to Type(fields = listOf(
-          Field(name = "Path", repeated = false, type = "String"),
-          Field(name = "Ascending", repeated = false, type = "Boolean"),
-      )),
-      "Order/DynamicList" to Type(fields = listOf(
-          Field(name = "Dynamic Orders", repeated = true, type = DYNAMIC_ORDER_TYPE_NAME)
-      )),
-      DYNAMIC_SELECT_TYPE_NAME to Type(fields = listOf(
-          Field(name = "Paths", repeated = true, type = "String")
-      )),
-      DYNAMIC_ROOT_TYPE to Type(fields = listOf(
-          Field(name = "Constraints", repeated = true,
-              type = DYNAMIC_CONSTRAINT_TYPE_NAME),
-          Field(name = "Orders", repeated = true, type = DYNAMIC_ORDER_TYPE_NAME),
-          Field(name = "Select", repeated = false, type = DYNAMIC_SELECT_TYPE_NAME),
-      )),
-  )
-
   fun <T : DbEntity<T>> fromQuery(
     dbEntityClass: KClass<T>,
     queryClass: KClass<out Query<T>>? = null,
@@ -79,7 +54,7 @@ class HibernateDatabaseQueryMetadataFactory @Inject constructor(
       addStaticQueryMethodMetadata(queryClass, constraintsResult, ordersResult, selectsResult)
       listOf()
     } else {
-      DYNAMIC_TYPES
+      DYNAMIC_TYPES_MANUAL
     }
 
     val queryTypes = queryTypesDynamicToInclude +
@@ -87,16 +62,22 @@ class HibernateDatabaseQueryMetadataFactory @Inject constructor(
         ordersResult.map { it.second.parametersTypeName to it.first } +
         selectsResult.map { it.second.parametersTypeName to it.first }
 
-    val queryType = if (constraintsResult.isEmpty() && ordersResult.isEmpty() && selectsResult.isEmpty()) {
-          DYNAMIC_TYPES.toMap()[DYNAMIC_ROOT_TYPE]!!
+    val isDynamic = queryClass == null && constraintsResult.isEmpty() && ordersResult.isEmpty() && selectsResult.isEmpty()
+    val queryType = if (isDynamic) {
+          DYNAMIC_TYPES_MANUAL.toMap()[DYNAMIC_ROOT_TYPE]!!
         } else {
           Type(fields = queryTypes.map { (name, _) ->
             Field(name = name, repeated = false, type = name)
           })
         }
 
+    val queryWebActionPath = if (isDynamic) {
+      HIBERNATE_QUERY_DYNAMIC_WEBACTION_PATH
+    } else {
+      HIBERNATE_QUERY_STATIC_WEBACTION_PATH
+    }
     return DatabaseQueryMetadata(
-        queryWebActionPath = HIBERNATE_QUERY_WEBACTION_PATH,
+        queryWebActionPath = queryWebActionPath,
         allowedCapabilities = allowedCapabilities,
         allowedServices = allowedServices,
         accessAnnotation = accessAnnotationClass,
@@ -308,4 +289,61 @@ class HibernateDatabaseQueryMetadataFactory @Inject constructor(
 
 //  inline fun <reified T: DbEntity<T>, Q: KClass<out Query<T>>, AA: KClass<out Annotation>> fromAQuery(): DatabaseQueryMetadata =
 //      fromQuery(dbEntityClass = T::class, queryClass = Q::class, accessAnnotationClass = AA::class)
+
+  companion object {
+    data class DynamicQueryConstraint(
+      val path: String?,
+      val operator: Operator?,
+      val value: String?
+    )
+
+    data class DynamicQueryOrder(
+      val path: String?,
+      val ascending: Boolean? = false
+    )
+
+    data class DynamicQuerySelect(
+      val paths: List<String>? = listOf()
+    )
+
+    data class DynamicQuery(
+      val constraints: List<DynamicQueryConstraint>?,
+      val orders: List<DynamicQueryOrder>?,
+      val select: DynamicQuerySelect?
+    )
+
+    private const val DYNAMIC_CONSTRAINT_TYPE_NAME = "Constraint/Dynamic"
+    private const val DYNAMIC_ORDER_TYPE_NAME = "Order/Dynamic"
+    private const val DYNAMIC_SELECT_TYPE_NAME = "Select/Dynamic"
+    private const val DYNAMIC_ROOT_TYPE = "DynamicQuery"
+    const val DYNAMIC_CONSTRAINTS_KEY = "constraints"
+    const val DYNAMIC_ORDERS_KEY = "orders"
+    const val DYNAMIC_SELECT_KEY = "select"
+
+    val DYNAMIC_TYPES = MiskWebFormBuilder().calculateTypes(DynamicQuery::class.createType())
+    // TODO replace this with a defined data class for a DynamicQuery, calling RequestTypes.calculate on it and a JSON adapter to read result
+    val DYNAMIC_TYPES_MANUAL = listOf(
+        DYNAMIC_CONSTRAINT_TYPE_NAME to Type(fields = listOf(
+            Field(name = "path", repeated = false, type = "String"),
+            createEnumField(Operator::class, "operator", false),
+            Field(name = "value", repeated = false, type = "String"),
+        )),
+        DYNAMIC_ORDER_TYPE_NAME to Type(fields = listOf(
+            Field(name = "path", repeated = false, type = "String"),
+            Field(name = "ascending", repeated = false, type = "Boolean"),
+        )),
+        "Order/DynamicList" to Type(fields = listOf(
+            Field(name = "Dynamic Orders", repeated = true, type = DYNAMIC_ORDER_TYPE_NAME)
+        )),
+        DYNAMIC_SELECT_TYPE_NAME to Type(fields = listOf(
+            Field(name = "paths", repeated = true, type = "String")
+        )),
+        DYNAMIC_ROOT_TYPE to Type(fields = listOf(
+            Field(name = DYNAMIC_CONSTRAINTS_KEY, repeated = true,
+                type = DYNAMIC_CONSTRAINT_TYPE_NAME),
+            Field(name = DYNAMIC_ORDERS_KEY, repeated = true, type = DYNAMIC_ORDER_TYPE_NAME),
+            Field(name = DYNAMIC_SELECT_KEY, repeated = false, type = DYNAMIC_SELECT_TYPE_NAME),
+        )),
+    )
+  }
 }

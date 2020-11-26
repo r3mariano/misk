@@ -42,6 +42,7 @@ abstract class HibernateDatabaseQueryMetadataModule : KAbstractModule() {
 
     configureHibernate()
 
-    install(WebActionModule.create<HibernateDatabaseQueryAction>())
+    install(WebActionModule.create<HibernateDatabaseQueryDynamicAction>())
+    install(WebActionModule.create<HibernateDatabaseQueryStaticAction>())
   }
 }
